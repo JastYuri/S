@@ -31,17 +31,18 @@ const sessionStore = new MySQLStore({}, pool);
 
 // Middleware to handle session management
 server.use(session({
-    secret: process.env.SESSION_SECRET || 'secure_default_secret', // Use .env for security
-    resave: false, // Don't save session if it hasn't been modified
+    secret: process.env.SESSION_SECRET || 'secure_default_secret', // Secret for signing the session ID cookie
+    resave: false, // Don't save the session if it's not modified
     saveUninitialized: false, // Don't save uninitialized sessions
-    store: sessionStore, // Store sessions in MySQL
+    store: sessionStore, // Store sessions in MySQL (or another store you're using)
     cookie: { 
-        secure: process.env.NODE_ENV === "production", // Enable secure cookies in production
-        httpOnly: true, // Prevent access to cookies via JavaScript
-        sameSite: 'None', // Allow cross-origin cookies (set to 'None' for front-end to receive cookies)
+        secure: process.env.NODE_ENV === "production", // Set to true in production, false in development (only if using HTTPS)
+        httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
+        sameSite: 'Lax', // SameSite set to 'Lax' to allow cookies to be sent with same-site requests
         maxAge: 1000 * 60 * 60 * 24 // 1-day session expiry
     }
 }));
+
 
 // Serve static files from the "public" directory
 const publicDirectory = path.join(__dirname, 'public');

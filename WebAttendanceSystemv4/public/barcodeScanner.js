@@ -204,27 +204,31 @@ function stopCamera() {
 function manualLogin() {
     const code = manualCodeInput.value.trim();
     if (code) {
-       fetch('/manual-login', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ code: code }),
-    credentials: 'include'  // Ensures the session cookie is sent for cross-origin requests
-})
-.then(response => response.json())
-.then(data => {
-    if (data.success) {
-        // Redirect to the dashboard on successful login
-        window.location.href = '/dashboard';
+        fetch('/manual-login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code: code }),
+            credentials: 'same-origin'  // Ensures the session cookie is sent with the request
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to the dashboard on successful login
+                window.location.href = '/dashboard';
+            } else {
+                // Handle login failure
+                alert("Invalid manual code. Please try again.");
+            }
+        })
+        .catch(error => {
+            console.error("Error during manual login:", error);
+        });
     } else {
-        // Handle login failure
-        alert("Invalid manual code. Please try again.");
+        alert("Please enter a code.");
     }
-})
-.catch(error => {
-    console.error("Error during manual login:", error);
-});
+}
 
 
 

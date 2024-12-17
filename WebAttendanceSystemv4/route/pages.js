@@ -303,13 +303,12 @@ router.post('/manual-login', async (req, res) => {
 
         // Query to check if the access code exists in the professors table
         const [results] = await db.query("SELECT * FROM professors WHERE uniqueCode = ?", [accessCode]);
-
         console.log("Query results:", results);
 
         if (results.length > 0) {
             // If the professor with the provided access code exists, store the code in session
             console.log("Access code found, login successful.");
-            req.session.professorCode = accessCode;
+            req.session.professorCode = accessCode; // Store the professor's unique code in session
             console.log("Session stored in manual login:", req.session.professorCode);
 
             // Ensure session data is saved before responding
@@ -328,6 +327,7 @@ router.post('/manual-login', async (req, res) => {
         res.status(500).json({ success: false, error: "An error occurred during login." });
     }
 });
+
 
 
 
@@ -372,11 +372,9 @@ router.post('/barcode-login', (req, res) => {
 
 
 
-
 router.get('/dashboard', (req, res) => {
     const professorCode = req.session.professorCode; // Get professor code from session
-
-    console.log("Professor code from session:", professorCode); // Log professor code
+    console.log("Professor code from session:", professorCode); // Log professor code to check if session is accessible
 
     if (professorCode) {
         // Query the database to find professor's name
@@ -400,6 +398,7 @@ router.get('/dashboard', (req, res) => {
         res.render('login', { errorMessage: "Please log in to continue." });
     }
 });
+
 
 
 

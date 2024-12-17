@@ -291,35 +291,75 @@ router.get('/', (req, res) => {
 });
 
 
-router.get('/dashboard', (req, res) => {
-    console.log("Full session data:", req.session);  // Log the entire session object
-    const professorCode = req.session.professorCode; // Get professor code from session
-    console.log("Professor code from session:", professorCode); // Log professor code to check if session is accessible
+router.post('/manual-login', (req, res) => {
+    const { code } = req.body;
 
-    if (professorCode) {
-        // Query the database to find professor's name
-        db.query("SELECT name FROM professors WHERE uniqueCode = ?", [professorCode], (error, results) => {
-            if (error) {
-                return handleDbError(res, error); // Handle database errors
-            }
+    db.query('SELECT * FROM professors WHERE uniqueCode = ?', [code], (err, results) => {
+        if (err) {
+            console.error("Database query error:", err);
+            return res.status(500).json({ success: false, error: "Database error." });
+        }
 
-            if (results && results.length > 0) {
-                const professorName = results[0].name;
-                console.log("Professor found:", professorName); // Log professor's name
-                // Render dashboard with professor's name
-                res.render('dashboard', { professorName });
-            } else {
-                console.log("Professor not found, redirecting to login."); // Log if professor is not found
-                res.render('login', { errorMessage: "Professor not found. Please log in again." });
-            }
-        });
-    } else {
-        console.log("No professor code in session, redirecting to login."); // Log if no session found
-        res.render('login', { errorMessage: "Please log in to continue." });
-    }
+        if (results.length > 0) {
+            // Store professor code in session (we're keeping this part, but no validation after)
+            req.session.professorCode = results[0].uniqueCode;
+            console.log("Session stored in manual login:", req.session.professorCode);
+
+            // Log session to ensure it's correctly set
+            console.log("Full session data:", req.session);
+
+            // Explicitly save session data before sending response
+            req.session.save((err) => {
+                if (err) {
+                    console.error("Error saving session:", err);
+                    return res.status(500).json({ success: false, error: "Session save error." });
+                }
+                console.log("Session successfully saved.");
+                return res.json({ success: true });
+            });
+        } else {
+            return res.status(400).json({ success: false, error: "Invalid access code." });
+        }
+    });
 });
 
+// Route for barcode login
+router.post('/barcode-login', (req, res) => {
+    const barcode = req.body.barcode;
+    console.log("Barcode Login Route Accessed");
+    console.log("Barcode Input:", barcode);
 
+    if (!barcode || barcode.trim() === "") {
+        return res.json({
+            success: false,
+            message: "No barcode scanned. Please scan a barcode."
+        });
+    }
+
+    db.query("SELECT * FROM Professors WHERE uniqueCode = ?", [barcode], (error, results) => {
+        if (error) {
+            console.error("Database error:", error);
+            return res.status(500).json({ success: false, message: "Database error" });
+        }
+
+        if (results && results.length > 0) {
+            const professor = results[0]; // Assuming the first result is the correct one
+            req.session.professorCode = professor.uniqueCode;
+            req.session.professorId = professor.id;
+
+            // Automatically redirect to the dashboard
+            res.json({
+                success: true,
+                redirectTo: '/dashboard' // Redirect to the professor's dashboard or another page
+            });
+        } else {
+            res.json({
+                success: false,
+                message: "Invalid barcode! Please try again."
+            });
+        }
+    });
+});
 
 router.get('/test-session', (req, res) => {
     res.json({ professorCode: req.session.professorCode });
@@ -327,35 +367,14 @@ router.get('/test-session', (req, res) => {
 
 
 
-node.js session problem not persisting
+routerr.get('/dashboard', (req, res) => {
+    // Remove the check for professorCode in session
+    const professorCode = req.session.professorCode; // You can still use this in your logic if needed, but no redirect based on this
 
-router.get('/dashboard', (req, res) => {
-    console.log("Full session data:", req.session);  // Log the entire session object
-    const professorCode = req.session.professorCode; // Get professor code from session
-    console.log("Professor code from session:", professorCode); // Log professor code to check if session is accessible
-
-    if (professorCode) {
-        // Query the database to find professor's name
-        db.query("SELECT name FROM professors WHERE uniqueCode = ?", [professorCode], (error, results) => {
-            if (error) {
-                return handleDbError(res, error); // Handle database errors
-            }
-
-            if (results && results.length > 0) {
-                const professorName = results[0].name;
-                console.log("Professor found:", professorName); // Log professor's name
-                // Render dashboard with professor's name
-                res.render('dashboard', { professorName });
-            } else {
-                console.log("Professor not found, redirecting to login."); // Log if professor is not found
-                res.render('login', { errorMessage: "Professor not found. Please log in again." });
-            }
-        });
-    } else {
-        console.log("No professor code in session, redirecting to login."); // Log if no session found
-        res.render('login', { errorMessage: "Please log in to continue." });
-    }
+    // Continue with the rest of your logic, e.g., rendering the dashboard
+    res.render('dashboard', { professorCode });
 });
+
 
 
 // Route to render the dashboard

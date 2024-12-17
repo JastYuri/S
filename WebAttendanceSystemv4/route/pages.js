@@ -376,6 +376,7 @@ router.post('/barcode-login', (req, res) => {
 
 
 router.get('/dashboard', (req, res) => {
+    console.log("Full session data:", req.session);  // Log the entire session object
     const professorCode = req.session.professorCode; // Get professor code from session
     console.log("Professor code from session:", professorCode); // Log professor code to check if session is accessible
 

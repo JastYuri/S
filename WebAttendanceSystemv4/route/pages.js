@@ -291,30 +291,46 @@ router.get('/', (req, res) => {
 });
 
 
-router.post('/manual-login', (req, res) => {
-    const { code } = req.body;
+router.post('/manual-login', async (req, res) => {
+    const accessCode = req.body.code;
+    console.log("Manual login route accessed");
+    console.log("Access Code:", accessCode);
 
-    // Fetch data based on the code
-    db.query('SELECT * FROM professors WHERE uniqueCode = ?', [code], (err, results) => {
-        if (err) {
-            console.error("Database query error:", err);
-            return res.status(500).json({ success: false, error: "Database error." });
-        }
+    try {
+        // Check database connection
+        await db.query("SELECT 1");
+        console.log("Database connection is active. Proceeding with query...");
+
+        // Query to check if the access code exists in the professors table
+        const [results] = await db.query("SELECT * FROM professors WHERE uniqueCode = ?", [accessCode]);
+        console.log("Query results:", results);
 
         if (results.length > 0) {
-            // Store professor code in session
-            req.session.professorCode = results[0].uniqueCode;
+            // If the professor with the provided access code exists, store the code in session
+            console.log("Access code found, login successful.");
+            req.session.professorCode = accessCode; // Store the professor's unique code in session
             console.log("Session stored in manual login:", req.session.professorCode);
 
-            // Log session to ensure it's correctly set
-            console.log("Full session data:", req.session);
+            // Ensure session data is saved before responding
+            req.session.save((err) => {
+                if (err) {
+                    console.error("Error saving session:", err);
+                    return res.status(500).json({ success: false, error: "Session save error." });
+                }
+                res.json({ success: true });
+            });
 
-            return res.json({ success: true });
         } else {
-            return res.status(400).json({ success: false, error: "Invalid access code." });
+            // If the access code doesn't match any professor, return failure
+            console.log("Access code not found, login failed.");
+            res.json({ success: false });
         }
-    });
+    } catch (error) {
+        console.error("Error during manual login:", error);
+        res.status(500).json({ success: false, error: "An error occurred during login." });
+    }
 });
+
 
 router.get('/test-session', (req, res) => {
     res.json({ professorCode: req.session.professorCode });
@@ -363,19 +379,32 @@ router.post('/barcode-login', (req, res) => {
 
 
 router.get('/dashboard', (req, res) => {
-    // Log session data to verify it's correctly stored
-    console.log("Professor code from session:", req.session.professorCode);
+    console.log("Full session data:", req.session);  // Log the entire session object
+    const professorCode = req.session.professorCode; // Get professor code from session
+    console.log("Professor code from session:", professorCode); // Log professor code to check if session is accessible
 
-    if (req.session.professorCode) {
-        // Proceed with your dashboard logic here
-        res.render('dashboard', { professorCode: req.session.professorCode });
+    if (professorCode) {
+        // Query the database to find professor's name
+        db.query("SELECT name FROM professors WHERE uniqueCode = ?", [professorCode], (error, results) => {
+            if (error) {
+                return handleDbError(res, error); // Handle database errors
+            }
+
+            if (results && results.length > 0) {
+                const professorName = results[0].name;
+                console.log("Professor found:", professorName); // Log professor's name
+                // Render dashboard with professor's name
+                res.render('dashboard', { professorName });
+            } else {
+                console.log("Professor not found, redirecting to login."); // Log if professor is not found
+                res.render('login', { errorMessage: "Professor not found. Please log in again." });
+            }
+        });
     } else {
-        console.log("No professor code in session, redirecting to login.");
-        res.redirect('/login');
+        console.log("No professor code in session, redirecting to login."); // Log if no session found
+        res.render('login', { errorMessage: "Please log in to continue." });
     }
 });
-
-
 
 
 

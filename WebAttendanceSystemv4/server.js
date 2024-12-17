@@ -4,7 +4,6 @@ const mysql = require("mysql2"); // Use mysql2 for MySQL connection
 const dotenv = require("dotenv");
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session); // For MySQL session storage
-const cors = require('cors'); // Import CORS
 const util = require('util');
 
 // Load environment variables from .env file
@@ -39,15 +38,9 @@ server.use(session({
     cookie: { 
         secure: process.env.NODE_ENV === "production", // Enable secure cookies in production
         httpOnly: true, // Prevent access to cookies via JavaScript
-        sameSite: 'None', // Set SameSite to None for cross-origin requests
+        sameSite: 'None', // Allow cross-origin cookies (set to 'None' for front-end to receive cookies)
         maxAge: 1000 * 60 * 60 * 24 // 1-day session expiry
     }
-}));
-
-// Enable CORS for the frontend domain (replace with your frontend URL)
-server.use(cors({
-    origin: 'https://s-o9ud.onrender.com', // Replace with the URL of your frontend (Render)
-    credentials: true // Allow cookies to be sent with requests
 }));
 
 // Serve static files from the "public" directory

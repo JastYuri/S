@@ -205,13 +205,13 @@ function manualLogin() {
     const code = manualCodeInput.value.trim();
     if (code) {
         fetch('/manual-login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ code: code })
-            credentials: 'same-origin'
-        })
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ code: code }),
+    credentials: 'same-origin'  // Ensures the session cookie is sent
+})
         .then(response => response.json())
         .then(data => {
             if (data.success) {

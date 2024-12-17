@@ -291,7 +291,7 @@ router.get('/', (req, res) => {
 });
 
 
-server.post('/manual-login', (req, res) => {
+router.post('/manual-login', (req, res) => {
     const { code } = req.body;
 
     // Fetch data based on the code
@@ -362,7 +362,7 @@ router.post('/barcode-login', (req, res) => {
 
 
 
-server.get('/dashboard', (req, res) => {
+router.get('/dashboard', (req, res) => {
     // Log session data to verify it's correctly stored
     console.log("Professor code from session:", req.session.professorCode);
 

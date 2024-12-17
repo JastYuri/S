@@ -311,6 +311,9 @@ router.post('/manual-login', async (req, res) => {
             req.session.professorCode = accessCode; // Store the professor's unique code in session
             console.log("Session stored in manual login:", req.session.professorCode);
 
+            // Log session to ensure it's correctly set
+            console.log("Full session data:", req.session);
+
             // Ensure session data is saved before responding
             req.session.save((err) => {
                 if (err) {
@@ -330,6 +333,7 @@ router.post('/manual-login', async (req, res) => {
         res.status(500).json({ success: false, error: "An error occurred during login." });
     }
 });
+
 
 
 router.get('/test-session', (req, res) => {

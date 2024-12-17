@@ -329,6 +329,9 @@ router.post('/manual-login', async (req, res) => {
 });
 
 
+router.get('/test-session', (req, res) => {
+    res.json({ professorCode: req.session.professorCode });
+});
 
 
 

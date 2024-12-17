@@ -327,44 +327,7 @@ router.get('/test-session', (req, res) => {
 
 
 
-// Route for barcode login
-router.post('/barcode-login', (req, res) => {
-    const barcode = req.body.barcode;
-    console.log("Barcode Login Route Accessed");
-    console.log("Barcode Input:", barcode);
-
-    if (!barcode || barcode.trim() === "") {
-        return res.json({
-            success: false,
-            message: "No barcode scanned. Please scan a barcode."
-        });
-    }
-
-    db.query("SELECT * FROM professors WHERE uniqueCode = ?", [barcode], (error, results) => {
-        if (error) {
-            console.error("Database error:", error);
-            return res.status(500).json({ success: false, message: "Database error" });
-        }
-
-        if (results && results.length > 0) {
-            const professor = results[0]; // Assuming the first result is the correct one
-            req.session.professorCode = professor.uniqueCode;
-            req.session.professorId = professor.id;
-
-            // Automatically redirect to the dashboard
-            res.json({
-                success: true,
-                redirectTo: '/dashboard' // Redirect to the professor's dashboard or another page
-            });
-        } else {
-            res.json({
-                success: false,
-                message: "Invalid barcode! Please try again."
-            });
-        }
-    });
-});
-
+node.js session problem not persisting
 
 router.get('/dashboard', (req, res) => {
     console.log("Full session data:", req.session);  // Log the entire session object

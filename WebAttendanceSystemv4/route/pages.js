@@ -367,7 +367,7 @@ router.get('/test-session', (req, res) => {
 
 
 
-routerr.get('/dashboard', (req, res) => {
+router.get('/dashboard', (req, res) => {
     // Remove the check for professorCode in session
     const professorCode = req.session.professorCode; // You can still use this in your logic if needed, but no redirect based on this
 

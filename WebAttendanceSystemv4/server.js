@@ -46,7 +46,7 @@ server.use(session({
 
 // Enable CORS for the frontend domain (replace with your frontend URL)
 server.use(cors({
-    origin: 'https://your-render-frontend-url', // Replace with the URL of your frontend (Render)
+    origin: 'https://s-o9ud.onrender.com', // Replace with the URL of your frontend (Render)
     credentials: true // Allow cookies to be sent with requests
 }));
 
